@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B2545">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ЖК Мега">
+
+<title>ЖК Мега — Подать заявку</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="zhk-firebase.js"></script>
+<style>
+:root{--navy:#0B2545;--blue:#13315C;--blue2:#1E4C8A;--sky:#E8EEF7;--gold:#C9A227;--gold2:#E3C568;--goldbg:#FBF5E2;--bg:#F4F2EC;--ink:#1A2233;--muted:#5E6B80;--line:#DCE2EC;--red:#B3261E;--redbg:#FBEAE9;--wa:#1F8F4E;--green:#1F7A4D;--greenbg:#E6F4EC;--amber:#9A6B00;--amberbg:#FFF4D6}
+*{box-sizing:border-box}
+body{margin:0;font-family:"PT Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16px}
+h1,h2,h3{font-family:"PT Serif",Georgia,serif;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+header{background:linear-gradient(135deg,var(--navy),var(--blue) 70%);color:#fff;border-bottom:4px solid var(--gold);padding-top:env(safe-area-inset-top)}
+.hw{max-width:640px;margin:0 auto;padding:18px 18px 22px;display:flex;align-items:center;gap:14px}
+.hw .hb{flex:1;min-width:0}
+.crest{width:50px;height:50px;flex:none}
+header h1{font-size:25px}header h1 span{color:var(--gold2)}
+header p{margin:3px 0 0;font-size:13px;color:#C9D4E6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rz-out{background:none;border:1px solid rgba(255,255,255,.45);color:#fff;border-radius:8px;padding:7px 12px;font-size:14px;cursor:pointer;flex:none}
+main{max-width:640px;margin:0 auto;padding:18px 16px calc(40px + env(safe-area-inset-bottom))}
+.rz-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:14px}
+.rz-lead h2{font-size:21px;color:var(--navy)}
+.rz-lead h2::after{content:"";display:block;width:40px;height:3px;background:var(--gold);margin-top:7px}
+.rz-lead p{margin:10px 0 0;color:var(--muted);line-height:1.45;font-size:15px}
+label.rz-f{display:block;font-size:14px;font-weight:700;color:var(--navy);margin:14px 0 6px}
+label.rz-f small{font-weight:400;color:var(--muted)}
+.rz-inp{width:100%;border:1px solid var(--line);border-radius:9px;padding:12px;background:#fff;font-size:16px}
+.rz-inp:focus{outline:2px solid var(--gold2);border-color:var(--gold)}
+.rz-inp[readonly]{background:var(--sky);color:var(--muted)}
+textarea.rz-inp{min-height:110px;resize:vertical}
+.rz-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rz-cats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rz-cat{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 4px;text-align:center;cursor:pointer;font-size:13px;line-height:1.2;min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.rz-cat .rz-e{font-size:22px}
+.rz-cat.rz-act{border-color:var(--navy);background:var(--navy);color:#fff;box-shadow:inset 0 -3px 0 var(--gold)}
+.rz-urg{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px;border-radius:9px;background:var(--redbg);border:1px solid #EFC7C4;cursor:pointer}
+.rz-urg input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--red)}
+.rz-urg b{color:var(--red)}
+.rz-btn{display:block;width:100%;border:0;border-radius:10px;padding:15px;font-weight:700;font-size:17px;cursor:pointer;text-align:center;text-decoration:none;margin-top:16px}
+.rz-btn:disabled{opacity:.6;cursor:default}
+.rz-btn.rz-gold{background:var(--gold);color:var(--navy)}
+.rz-btn.rz-wa{background:var(--wa);color:#fff}
+.rz-btn.rz-ghost{background:#fff;color:var(--blue2);border:1px solid var(--blue2);font-size:15px;padding:12px;margin-top:10px}
+.rz-err{color:var(--red);font-size:14px;margin-top:10px;display:none}
+.rz-okmsg{color:var(--green);font-size:14px;margin-top:10px;display:none}
+.rz-preview{background:var(--sky);border-left:4px solid var(--blue2);border-radius:8px;padding:12px 14px;white-space:pre-wrap;font-size:15px;line-height:1.45;word-break:break-word}
+.rz-ok h2{color:var(--navy);font-size:20px;margin-bottom:6px}
+.rz-steps{padding-left:20px;margin:8px 0 0;color:var(--muted);font-size:15px;line-height:1.5}
+.rz-sos{display:flex;gap:12px;align-items:center;font-size:14px;color:var(--muted)}
+.rz-sos b{color:var(--red);font-size:18px}
+.rz-warn{background:var(--goldbg);border:1px solid #EAD8A0;border-radius:9px;padding:12px;font-size:14px;color:#6B5200;display:none;margin-top:12px}
+.rz-note{font-size:14px;color:var(--muted);margin:14px 0 0;text-align:center;line-height:1.45}
+.rz-note a{color:var(--blue2)}
+.rz-seg{display:grid;grid-template-columns:1fr 1fr;background:var(--sky);border-radius:10px;padding:4px;gap:4px}
+.rz-seg button{border:0;background:none;border-radius:8px;padding:10px;font-weight:700;color:var(--blue2);cursor:pointer}
+.rz-seg button.act{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(11,37,69,.15)}
+.rz-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+.rz-tabs button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 4px;font-weight:700;font-size:14px;color:var(--blue2);cursor:pointer;position:relative}
+.rz-tabs button.act{background:var(--navy);border-color:var(--navy);color:#fff;box-shadow:inset 0 -3px 0 var(--gold)}
+.rz-tabs .rz-badge{display:inline-block;min-width:20px;padding:0 6px;border-radius:10px;background:var(--gold);color:var(--navy);font-size:12px;margin-left:4px}
+.rz-req{border-left:4px solid var(--line)}
+.rz-req.s-new{border-left-color:var(--blue2)}.rz-req.s-work{border-left-color:var(--amber)}.rz-req.s-done{border-left-color:var(--green)}.rz-req.s-rej{border-left-color:var(--muted)}
+.rz-rh{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
+.rz-rh .rz-sp{flex:1}
+.rz-tag{display:inline-block;border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700}
+.t-new{background:var(--sky);color:var(--blue2)}.t-work{background:var(--amberbg);color:var(--amber)}.t-done{background:var(--greenbg);color:var(--green)}.t-rej{background:#EEF0F3;color:var(--muted)}.t-cat{background:#F1EEE4;color:#5B4B12}.t-high{background:var(--redbg);color:var(--red)}
+.rz-rt{margin-top:8px;line-height:1.45;white-space:pre-wrap;word-break:break-word}
+.rz-req details{margin-top:8px;font-size:14px}
+.rz-req summary{cursor:pointer;color:var(--blue2);font-weight:700}
+.rz-notes div{border-left:2px solid var(--line);padding:4px 0 4px 10px;margin-top:6px}
+.rz-notes small{color:var(--muted)}
+.rz-empty{text-align:center;color:var(--muted);padding:26px 18px}
+.rz-empty h3{color:var(--navy);margin-bottom:6px}
+.rz-loading{text-align:center;color:var(--muted);padding:40px 0}
+footer{text-align:center;font-size:12px;color:var(--muted);padding:6px 0 20px}
+.rz-hide{display:none!important}
+</style>
+</head>
+<body>
+<header><div class="hw">
+  <svg class="crest" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 3 L58 12 V32 C58 47 46 57 32 61 C18 57 6 47 6 32 V12 Z" fill="#13315C" stroke="#C9A227" stroke-width="3"/><path d="M17 44 V27 L32 17 L47 27 V44 Z" fill="none" stroke="#E3C568" stroke-width="2.5"/><rect x="22" y="30" width="6" height="6" fill="#E3C568"/><rect x="36" y="30" width="6" height="6" fill="#E3C568"/><rect x="29" y="36" width="6" height="8" fill="#E3C568"/></svg>
+  <div class="hb"><h1>ЖК <span>Мега</span></h1><p id="hSub">Приём заявок от жителей</p></div>
+  <button class="rz-out rz-hide" id="hOut" type="button">Выйти</button>
+</div></header>
+<main>
+
+<!-- ЗАГРУЗКА -->
+<div id="vLoading" class="rz-loading rz-hide">Загрузка…</div>
+
+<!-- ВХОД / РЕГИСТРАЦИЯ -->
+<div id="vAuth" class="rz-hide">
+  <div class="rz-card rz-lead"><h2 id="aTitle">Вход для жителей</h2><p id="aLead">Войдите по номеру телефона, чтобы подать заявку и следить за её выполнением.</p></div>
+  <div class="rz-card">
+    <div class="rz-seg" id="aSeg"><button type="button" data-a="in" class="act">Вход</button><button type="button" data-a="up">Регистрация</button></div>
+    <form id="aForm" novalidate>
+      <div id="aUp" class="rz-hide">
+        <label class="rz-f" for="aName">Имя и фамилия</label>
+        <input class="rz-inp" id="aName" autocomplete="name" placeholder="Айгуль Серикова">
+        <div class="rz-row">
+          <div><label class="rz-f" for="aApt">Квартира</label><input class="rz-inp" id="aApt" inputmode="numeric" placeholder="45"></div>
+          <div><label class="rz-f" for="aEnt">Подъезд</label><input class="rz-inp" id="aEnt" inputmode="numeric" placeholder="2"></div>
+        </div>
+      </div>
+      <label class="rz-f" for="aPhone">Номер телефона</label>
+      <input class="rz-inp" id="aPhone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+7 7__ ___ __ __">
+      <label class="rz-f" for="aPass">Пароль <small id="aPassHint"></small></label>
+      <input class="rz-inp" id="aPass" type="password" autocomplete="current-password">
+      <div id="aUp2" class="rz-hide">
+        <label class="rz-f" for="aPass2">Повторите пароль</label>
+        <input class="rz-inp" id="aPass2" type="password" autocomplete="new-password">
+      </div>
+      <div class="rz-err" id="aErr"></div>
+      <button class="rz-btn rz-gold" id="aBtn" type="submit">Войти</button>
+      <p class="rz-note" id="aForgot">Забыли пароль? <a id="aForgotLink" href="#" target="_blank" rel="noopener">Напишите администратору дома</a> — он восстановит доступ.</p>
+    </form>
+  </div>
+  <div class="rz-card rz-sos"><b>112</b><span>При угрозе жизни, пожаре или запахе газа сначала звоните в экстренные службы: 112 (101 — пожарные, 103 — скорая, 104 — газовая служба).</span></div>
+</div>
+
+<!-- ПРИЛОЖЕНИЕ ЖИТЕЛЯ -->
+<div id="vApp" class="rz-hide">
+  <div class="rz-tabs rz-hide" id="rTabs">
+    <button type="button" data-t="form" class="act">Новая заявка</button>
+    <button type="button" data-t="mine">Мои заявки<span class="rz-badge rz-hide" id="mineCnt">0</span></button>
+    <button type="button" data-t="profile">Профиль</button>
+  </div>
+
+  <!-- Новая заявка -->
+  <div id="v-form">
+<!--RFORM-->
+<div id="rStep1">
+  <div class="rz-card rz-lead"><h2>Подать заявку</h2><p id="rLead">Опишите проблему — заявка будет передана администратору дома через WhatsApp и зарегистрирована в журнале обращений.</p>
+    <div class="rz-warn" id="rNoWa">Номер администратора ещё не настроен. Обратитесь к администратору дома.</div></div>
+  <form class="rz-card" id="rForm" novalidate>
+    <label class="rz-f">Что случилось?</label>
+    <div class="rz-cats" id="rCats"></div>
+    <label class="rz-f" for="rText">Опишите проблему</label>
+    <textarea class="rz-inp" id="rText" placeholder="Например: во 2-м подъезде не работает лифт с утра"></textarea>
+    <div class="rz-row">
+      <div><label class="rz-f" for="rApt">Квартира</label><input class="rz-inp" id="rApt" inputmode="numeric" placeholder="45"></div>
+      <div><label class="rz-f" for="rEnt">Подъезд</label><input class="rz-inp" id="rEnt" inputmode="numeric" placeholder="2"></div>
+    </div>
+    <div id="rWho">
+      <label class="rz-f" for="rName">Ваше имя</label>
+      <input class="rz-inp" id="rName" autocomplete="name" placeholder="Имя и фамилия">
+      <label class="rz-f" for="rPhone">Телефон <small>для связи</small></label>
+      <input class="rz-inp" id="rPhone" type="tel" autocomplete="tel" placeholder="+7 7__ ___ __ __">
+    </div>
+    <label class="rz-urg"><input type="checkbox" id="rUrg"><span><b>Срочно / авария</b><br><span style="font-size:14px;color:var(--muted)">Затопление, нет света или воды, застрял лифт, запах газа</span></span></label>
+    <div class="rz-err" id="rErr"></div>
+    <button class="rz-btn rz-gold" id="rSubmit" type="submit">Продолжить</button>
+  </form>
+  <div class="rz-card rz-sos"><b>112</b><span>При угрозе жизни, пожаре или запахе газа сначала звоните в экстренные службы: 112 (101 — пожарные, 103 — скорая, 104 — газовая служба).</span></div>
+</div>
+<div id="rStep2" class="rz-hide">
+  <div class="rz-card rz-ok"><h2 id="rOkTitle">Проверьте заявку</h2>
+    <p id="rOkText" class="rz-hide" style="margin:0 0 12px;color:var(--muted);line-height:1.45">Заявка зарегистрирована и уже видна администратору. Статус можно отслеживать во вкладке «Мои заявки».</p>
+    <div class="rz-preview" id="rPrev"></div>
+    <a class="rz-btn rz-wa" id="rSend" href="#" target="_blank" rel="noopener">Отправить в WhatsApp</a>
+    <button class="rz-btn rz-ghost" id="rCopy" type="button">Скопировать текст</button>
+    <button class="rz-btn rz-ghost" id="rBack" type="button">← Изменить</button>
+    <button class="rz-btn rz-ghost rz-hide" id="rToMine" type="button">Мои заявки</button>
+    <button class="rz-btn rz-ghost rz-hide" id="rAgain" type="button">Подать ещё одну заявку</button>
+    <ol class="rz-steps" id="rSteps"><li>Нажмите «Отправить в WhatsApp» — откроется чат с администратором с готовым текстом.</li><li>Нажмите кнопку отправки в WhatsApp.</li><li>Администратор зарегистрирует заявку и ответит вам в WhatsApp.</li></ol>
+  </div>
+</div>
+<!--/RFORM-->
+  </div>
+
+  <!-- Мои заявки -->
+  <div id="v-mine" class="rz-hide">
+    <div id="mineList"><div class="rz-loading">Загрузка…</div></div>
+  </div>
+
+  <!-- Профиль -->
+  <div id="v-profile" class="rz-hide">
+    <form class="rz-card" id="pForm" novalidate>
+      <h2 style="color:var(--navy);font-size:20px">Мои данные</h2>
+      <label class="rz-f" for="pPhone">Телефон <small>(логин, изменить нельзя)</small></label>
+      <input class="rz-inp" id="pPhone" readonly>
+      <label class="rz-f" for="pName">Имя и фамилия</label>
+      <input class="rz-inp" id="pName" autocomplete="name">
+      <div class="rz-row">
+        <div><label class="rz-f" for="pApt">Квартира</label><input class="rz-inp" id="pApt" inputmode="numeric"></div>
+        <div><label class="rz-f" for="pEnt">Подъезд</label><input class="rz-inp" id="pEnt" inputmode="numeric"></div>
+      </div>
+      <div class="rz-err" id="pErr"></div><div class="rz-okmsg" id="pOk">Сохранено ✓</div>
+      <button class="rz-btn rz-gold" type="submit">Сохранить</button>
+    </form>
+    <form class="rz-card" id="cpForm" novalidate>
+      <h2 style="color:var(--navy);font-size:20px">Сменить пароль</h2>
+      <label class="rz-f" for="cpCur">Текущий пароль</label>
+      <input class="rz-inp" id="cpCur" type="password" autocomplete="current-password">
+      <label class="rz-f" for="cpNew">Новый пароль <small>не короче 6 символов</small></label>
+      <input class="rz-inp" id="cpNew" type="password" autocomplete="new-password">
+      <div class="rz-err" id="cpErr"></div><div class="rz-okmsg" id="cpOk">Пароль изменён ✓</div>
+      <button class="rz-btn rz-ghost" type="submit">Сменить пароль</button>
+    </form>
+    <button class="rz-btn rz-ghost" id="pOut" type="button" style="color:var(--red);border-color:#E3B3B0">Выйти из аккаунта</button>
+  </div>
+</div>
+
+<footer>ЖК «Мега» · Служба приёма заявок</footer>
+</main>
+<script>
+window.ZHK_CONFIG = { wa: "77476202646" };   // номер WhatsApp администратора (можно переопределить ссылкой ?wa=...)
+/*RJS*/
+(function(){
+  const R_CATS=[["lift","🛗","Лифт"],["water","🚰","Вода, канализация"],["heat","🔥","Отопление"],["elec","💡","Свет, электрика"],["clean","🧹","Уборка, мусор"],["door","🚪","Домофон, двери"],["yard","🚗","Двор, парковка"],["noise","🔊","Шум, соседи"],["other","📝","Другое"]];
+  const R_CAT_FULL={lift:"Лифт",water:"Водоснабжение и канализация",heat:"Отопление",elec:"Электричество и освещение",clean:"Уборка и мусор",door:"Домофон и двери",yard:"Двор и парковка",noise:"Шум и соседи",pay:"Оплата и документы",other:"Прочее"};
+  const ST={new:"Новая",work:"В работе",done:"Выполнена",rej:"Отклонена"};
+  const q=s=>document.getElementById(s);
+  const show=(id,on)=>q(id).classList.toggle("rz-hide",!on);
+  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const fmtDate=iso=>{ if(!iso) return ""; const d=new Date(iso); return isNaN(d)?iso:d.toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}); };
+  const Z=window.ZHK||{ready:false};
+  const AUTH=!!Z.ready;
+  let rCat="", rMsg="", me=null, profile=null, unsubMine=null, signingUp=false;
+
+  function waNumber(){
+    let n=""; try{ n=new URLSearchParams(location.search).get("wa")||""; }catch(e){}
+    n = n || (window.ZHK_CONFIG&&window.ZHK_CONFIG.wa) || "";
+    return String(n).replace(/\D/g,"").replace(/^8(?=7\d{9}$)/,"7");
+  }
+  window.zhkResidentRefresh=function(){
+    const has=waNumber().length>=10;
+    q("rNoWa").style.display = (!AUTH && !has) ? "block" : "none";
+    q("aForgotLink").href = has ? "https://wa.me/"+waNumber()+"?text="+encodeURIComponent("Здравствуйте! Я забыл(а) пароль от приложения ЖК Мега. Мой номер: ") : "#";
+  };
+
+  /* ---------- категории ---------- */
+  q("rCats").innerHTML=R_CATS.map(([k,e,n])=>`<button type="button" class="rz-cat" data-k="${k}"><span class="rz-e">${e}</span>${n}</button>`).join("");
+  q("rCats").querySelectorAll(".rz-cat").forEach(b=>b.onclick=()=>{ rCat=b.dataset.k; q("rCats").querySelectorAll(".rz-cat").forEach(x=>x.classList.toggle("rz-act",x===b)); });
+  function resetForm(){ rCat=""; q("rText").value=""; q("rUrg").checked=false; q("rCats").querySelectorAll(".rz-cat").forEach(x=>x.classList.remove("rz-act")); if(profile){ q("rApt").value=profile.apt||""; q("rEnt").value=profile.ent||""; } }
+  function step(n){ show("rStep1",n===1); show("rStep2",n===2); window.scrollTo(0,0); }
+
+  /* ---------- вкладки ---------- */
+  function tab(t){ ["form","mine","profile"].forEach(k=>show("v-"+k,k===t)); q("rTabs").querySelectorAll("button").forEach(b=>b.classList.toggle("act",b.dataset.t===t)); window.scrollTo(0,0); }
+  q("rTabs").querySelectorAll("button").forEach(b=>b.onclick=()=>tab(b.dataset.t));
+
+  /* ---------- текст заявки ---------- */
+  function buildMsg(v){
+    return "📋 ЗАЯВКА · ЖК Мега\n"
+      + "Категория: "+R_CAT_FULL[rCat]+"\n"
+      + (q("rUrg").checked ? "Срочно: ДА\n" : "")
+      + "Квартира: "+v.apt+(v.ent?", подъезд "+v.ent:"")+"\n"
+      + "Имя: "+v.name+"\n"
+      + (v.phone?"Телефон: "+v.phone+"\n":"")
+      + "Описание: "+v.text;
+  }
+  function setWaLink(){ const n=waNumber(); q("rSend").href="https://wa.me/"+n+"?text="+encodeURIComponent(rMsg); q("rSend").style.display = n.length>=10 ? "block" : "none"; }
+
+  q("rForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const v=k=>q(k).value.trim();
+    const err=[]; if(!rCat) err.push("выберите, что случилось"); if(v("rText").length<5) err.push("опишите проблему"); if(!v("rApt")) err.push("укажите квартиру");
+    if(!AUTH && !v("rName")) err.push("укажите имя");
+    if(err.length){ q("rErr").textContent="Пожалуйста, "+err.join(", ")+"."; q("rErr").style.display="block"; return; }
+    q("rErr").style.display="none";
+
+    if(!AUTH){
+      try{ localStorage.setItem("zhk_resident",JSON.stringify({rName:v("rName"),rPhone:v("rPhone"),rApt:v("rApt"),rEnt:v("rEnt")})); }catch(e){}
+      rMsg=buildMsg({apt:v("rApt"),ent:v("rEnt"),name:v("rName"),phone:v("rPhone"),text:v("rText")});
+      q("rPrev").textContent=rMsg; setWaLink(); step(2); return;
+    }
+
+    // режим с авторизацией: заявка сразу пишется в общий реестр
+    const btn=q("rSubmit"); btn.disabled=true; btn.textContent="Отправка…";
+    const phone=Z.fmtPhone(profile.phone);
+    const r={uid:me.uid, source:"app", name:profile.name||"", phone, apt:v("rApt"), ent:v("rEnt"), cat:rCat, pri:q("rUrg").checked?"high":"normal", text:v("rText"), status:"new", createdAt:new Date().toISOString(), notes:[]};
+    try{
+      await Z.db.collection("requests").add(r);
+      rMsg=buildMsg({apt:r.apt,ent:r.ent,name:r.name,phone,text:r.text});
+      q("rPrev").textContent=rMsg; setWaLink();
+      q("rSend").textContent="Дополнительно написать в WhatsApp";
+      step(2); resetForm();
+    }catch(ex){ q("rErr").textContent="Не удалось отправить заявку. "+Z.authError(ex); q("rErr").style.display="block"; }
+    finally{ btn.disabled=false; btn.textContent="Отправить заявку"; }
+  });
+  q("rBack").onclick=()=>step(1);
+  q("rAgain").onclick=()=>step(1);
+  q("rToMine").onclick=()=>{ step(1); tab("mine"); };
+  q("rCopy").onclick=async()=>{ try{ await navigator.clipboard.writeText(rMsg); q("rCopy").textContent="Скопировано ✓"; }catch(e){ q("rCopy").textContent="Выделите текст выше и скопируйте"; } setTimeout(()=>q("rCopy").textContent="Скопировать текст",2500); };
+
+  zhkResidentRefresh();
+
+  /* ================= режим без Firebase (как раньше) ================= */
+  if(!AUTH){
+    try{ const s=JSON.parse(localStorage.getItem("zhk_resident")||"{}"); ["rName","rPhone","rApt","rEnt"].forEach(k=>{ if(s[k]) q(k).value=s[k]; }); }catch(e){}
+    show("vApp",true);
+    return;
+  }
+
+  /* ================= режим с авторизацией ================= */
+  // Форма: имя/телефон берутся из профиля, после отправки — экран «принято»
+  show("rWho",false); show("rBack",false); show("rCopy",false); show("rSteps",false);
+  show("rToMine",true); show("rAgain",true); show("rOkText",true); show("rTabs",true);
+  q("rOkTitle").textContent="Заявка принята ✓";
+  q("rLead").textContent="Опишите проблему — заявка сразу попадёт в реестр администратора, а статус вы увидите во вкладке «Мои заявки».";
+  q("rSubmit").textContent="Отправить заявку";
+  show("vLoading",true);
+
+  // Вход / регистрация
+  let aMode="in";
+  function setAMode(m){
+    aMode=m; q("aSeg").querySelectorAll("button").forEach(b=>b.classList.toggle("act",b.dataset.a===m));
+    show("aUp",m==="up"); show("aUp2",m==="up"); show("aForgot",m==="in");
+    q("aBtn").textContent = m==="up" ? "Зарегистрироваться" : "Войти";
+    q("aTitle").textContent = m==="up" ? "Регистрация жителя" : "Вход для жителей";
+    q("aLead").textContent = m==="up" ? "Регистрация нужна один раз. Номер телефона будет вашим логином, пароль придумайте сами." : "Войдите по номеру телефона, чтобы подать заявку и следить за её выполнением.";
+    q("aPassHint").textContent = m==="up" ? "не короче 6 символов" : "";
+    q("aPass").autocomplete = m==="up" ? "new-password" : "current-password";
+    q("aErr").style.display="none";
+  }
+  q("aSeg").querySelectorAll("button").forEach(b=>b.onclick=()=>setAMode(b.dataset.a));
+  q("aForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const v=k=>q(k).value.trim();
+    const phone=Z.normPhone(v("aPhone")), pass=q("aPass").value;
+    const err=[];
+    if(!Z.validPhone(phone)) err.push("укажите номер телефона в формате +7 7XX XXX XX XX");
+    if(aMode==="up"){
+      if(!v("aName")) err.push("укажите имя");
+      if(!v("aApt")) err.push("укажите квартиру");
+      if(pass.length<6) err.push("пароль должен быть не короче 6 символов");
+      else if(pass!==q("aPass2").value) err.push("пароли не совпадают");
+    } else if(!pass) err.push("введите пароль");
+    if(err.length){ q("aErr").textContent="Пожалуйста, "+err.join(", ")+"."; q("aErr").style.display="block"; return; }
+    q("aErr").style.display="none";
+    const btn=q("aBtn"), label=btn.textContent; btn.disabled=true; btn.textContent="Подождите…";
+    try{
+      if(aMode==="up"){
+        signingUp=true;
+        const u=await Z.signUp(phone,pass,{name:v("aName"),apt:v("aApt"),ent:v("aEnt")});
+        signingUp=false; await enterApp(u);
+      } else await Z.signIn(phone,pass);
+      q("aPass").value=""; q("aPass2").value="";
+    }catch(ex){
+      signingUp=false;
+      q("aErr").textContent=Z.authError(ex); q("aErr").style.display="block";
+    }finally{ btn.disabled=false; btn.textContent=label; }
+  });
+
+  async function loadProfile(u){
+    const phone=Z.phoneFromEmail(u.email);
+    try{
+      const s=await Z.db.collection("users").doc(u.uid).get();
+      if(s.exists) return Object.assign({phone},s.data());
+      const p={phone,name:"",apt:"",ent:"",createdAt:new Date().toISOString()};
+      await Z.db.collection("users").doc(u.uid).set(p); return p;
+    }catch(e){ return {phone,name:"",apt:"",ent:""}; }
+  }
+  function fillProfile(){
+    q("hSub").textContent=(profile.name||Z.fmtPhone(profile.phone))+(profile.apt?" · кв. "+profile.apt:"");
+    q("pPhone").value=Z.fmtPhone(profile.phone); q("pName").value=profile.name||""; q("pApt").value=profile.apt||""; q("pEnt").value=profile.ent||"";
+    q("rApt").value=profile.apt||""; q("rEnt").value=profile.ent||"";
+  }
+  async function enterApp(u){
+    me=u; profile=await loadProfile(u);
+    fillProfile();
+    show("vLoading",false); show("vAuth",false); show("vApp",true); show("hOut",true);
+    tab("form"); step(1);
+    Z.db.doc("config/main").get().then(s=>{ if(s.exists && s.data().wa){ window.ZHK_CONFIG.wa=s.data().wa; zhkResidentRefresh(); } }).catch(()=>{});
+    if(unsubMine) unsubMine();
+    unsubMine=Z.db.collection("requests").where("uid","==",u.uid).onSnapshot(snap=>{
+      renderMine(snap.docs.map(d=>({id:d.id,...d.data()})));
+    },err=>{ q("mineList").innerHTML=`<div class="rz-card rz-empty">Не удалось загрузить заявки. ${esc(Z.authError(err))}</div>`; });
+    if(!profile.name) { tab("profile"); q("pErr").textContent="Пожалуйста, заполните имя и квартиру."; q("pErr").style.display="block"; }
+  }
+  function leaveApp(){
+    me=null; profile=null; if(unsubMine){ unsubMine(); unsubMine=null; }
+    q("hSub").textContent="Приём заявок от жителей";
+    show("vLoading",false); show("vApp",false); show("hOut",false); show("vAuth",true);
+    q("mineList").innerHTML='<div class="rz-loading">Загрузка…</div>';
+  }
+  Z.auth.onAuthStateChanged(u=>{ if(signingUp) return; if(u) enterApp(u); else leaveApp(); });
+  q("hOut").onclick=q("pOut").onclick=()=>Z.signOut();
+
+  function renderMine(list){
+    list.sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
+    const act=list.filter(r=>r.status==="new"||r.status==="work").length;
+    q("mineCnt").textContent=act; show("mineCnt",act>0);
+    if(!list.length){ q("mineList").innerHTML='<div class="rz-card rz-empty"><h3>Заявок пока нет</h3>Подайте первую заявку во вкладке «Новая заявка».</div>'; return; }
+    q("mineList").innerHTML=list.map(r=>{
+      const notes=(r.notes||[]);
+      return `<div class="rz-card rz-req s-${esc(r.status)}">
+        <div class="rz-rh"><span class="rz-tag t-${esc(r.status)}">${esc(ST[r.status]||r.status)}</span><span class="rz-tag t-cat">${esc(R_CAT_FULL[r.cat]||"Прочее")}</span>${r.pri==="high"?'<span class="rz-tag t-high">Срочно</span>':""}<span class="rz-sp"></span><span>${fmtDate(r.createdAt)}</span></div>
+        <div class="rz-rt">${esc(r.text)}</div>
+        ${r.status==="done"&&r.doneAt?`<div class="rz-rh" style="margin-top:8px;color:var(--green)">Выполнена ${fmtDate(r.doneAt)}</div>`:""}
+        ${notes.length?`<details><summary>Ход исполнения (${notes.length})</summary><div class="rz-notes">${notes.map(n=>`<div><small>${fmtDate(n.at)}</small><br>${esc(n.text)}</div>`).join("")}</div></details>`:""}
+      </div>`;}).join("");
+  }
+
+  // Профиль
+  q("pForm").addEventListener("submit",async e=>{
+    e.preventDefault(); show("pOk",false);
+    const d={name:q("pName").value.trim(), apt:q("pApt").value.trim(), ent:q("pEnt").value.trim()};
+    if(!d.name||!d.apt){ q("pErr").textContent="Укажите имя и квартиру."; q("pErr").style.display="block"; return; }
+    q("pErr").style.display="none";
+    try{ await Z.db.collection("users").doc(me.uid).update(d); Object.assign(profile,d); fillProfile(); q("pOk").style.display="block"; setTimeout(()=>show("pOk",false),2500); }
+    catch(ex){ q("pErr").textContent=Z.authError(ex); q("pErr").style.display="block"; }
+  });
+  q("cpForm").addEventListener("submit",async e=>{
+    e.preventDefault(); q("cpOk").style.display="none";
+    const cur=q("cpCur").value, nw=q("cpNew").value;
+    if(!cur||nw.length<6){ q("cpErr").textContent="Введите текущий пароль и новый — не короче 6 символов."; q("cpErr").style.display="block"; return; }
+    q("cpErr").style.display="none";
+    try{ await Z.changePassword(cur,nw); q("cpCur").value=""; q("cpNew").value=""; q("cpOk").style.display="block"; }
+    catch(ex){ q("cpErr").textContent=Z.authError(ex); q("cpErr").style.display="block"; }
+  });
+})();
+/*/RJS*/
+</script>
+<div id="installBar" style="display:none;position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:50;background:#0B2545;color:#fff;border-left:4px solid #C9A227;border-radius:10px;padding:12px 14px;font:15px 'PT Sans',sans-serif;align-items:center;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.25)"><span style="flex:1">Установить «ЖК Мега» на этот телефон?</span><button id="installBtn" style="background:#C9A227;color:#0B2545;border:0;border-radius:7px;padding:8px 14px;font-weight:700">Установить</button><button id="installX" style="background:none;border:0;color:#fff;font-size:20px">×</button></div>
+<script>
+if("serviceWorker" in navigator && location.protocol!=="file:"){ addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{})); }
+(function(){ let dp=null; const bar=document.getElementById("installBar");
+addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); dp=e; try{ if(localStorage.getItem("zhk_noinstall")) return; }catch(_){} bar.style.display="flex"; });
+document.getElementById("installBtn").onclick=async()=>{ if(!dp) return; dp.prompt(); await dp.userChoice; dp=null; bar.style.display="none"; };
+document.getElementById("installX").onclick=()=>{ bar.style.display="none"; try{ localStorage.setItem("zhk_noinstall","1"); }catch(_){} };
+addEventListener("appinstalled",()=>{ bar.style.display="none"; }); })();
+</script>
+</body>
+</html>

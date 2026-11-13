@@ -1,0 +1,60 @@
+rules_version = '2';
+// Правила доступа ЖК Мега.
+// Вставьте этот текст целиком: Firebase Console → Firestore Database → Rules → Publish.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isAdmin() {
+      return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    function shortStr(v, max) { return v is string && v.size() <= max; }
+
+    // Список администраторов. Заполняется только вручную в консоли Firebase.
+    match /admins/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Профили жителей: житель видит и правит только свой, админ — все.
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['phone', 'name', 'apt', 'ent', 'createdAt'])
+        && request.resource.data.phone == request.auth.token.email.split('@')[0]
+        && shortStr(request.resource.data.name, 100)
+        && shortStr(request.resource.data.apt, 10)
+        && shortStr(request.resource.data.ent, 10);
+      allow update: if isAdmin() || (signedIn() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'apt', 'ent'])
+        && shortStr(request.resource.data.name, 100)
+        && shortStr(request.resource.data.apt, 10)
+        && shortStr(request.resource.data.ent, 10));
+      allow delete: if isAdmin();
+    }
+
+    // Заявки: житель создаёт и читает только свои, админ — всё.
+    match /requests/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if isAdmin() || (signedIn()
+        && request.resource.data.keys().hasOnly(['uid', 'source', 'name', 'phone', 'apt', 'ent', 'cat', 'pri', 'text', 'status', 'createdAt', 'notes'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.source == 'app'
+        && request.resource.data.status == 'new'
+        && request.resource.data.pri in ['normal', 'high']
+        && request.resource.data.notes.size() == 0
+        && shortStr(request.resource.data.text, 3000)
+        && request.resource.data.text.size() >= 5
+        && shortStr(request.resource.data.name, 100)
+        && shortStr(request.resource.data.apt, 10)
+        && shortStr(request.resource.data.ent, 10));
+      allow update, delete: if isAdmin();
+    }
+
+    // Настройки (номер WhatsApp и т.п.): читать могут все вошедшие, менять — админ.
+    match /config/{doc} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+  }
+}
